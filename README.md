@@ -12,19 +12,19 @@ ChatGPT loses context in long conversations about story elements. This system pr
 🔄 Next: Implement vector search and file processing  
 
 ## Quick Start
-python src/ingest.py
-python src/search.py  
-python src/chat.py
+- python src/ingest.py
+- python src/search.py
+- python src/chat.py
 
 ## Architecture
-src/ingest.py - Loads story bible files into vector database
-src/search.py - Semantic search for relevant content
-src/chat.py - Chat interface with context injection
-bible_content/ - Story bible markdown files
-data/ - Vector database storage
+- src/ingest.py - Loads story bible files into vector database
+- src/search.py - Semantic search for relevant content
+- src/chat.py - Chat interface with context injection
+- bible_content/ - Story bible markdown files
+- data/ - Vector database storage
 
 ## Dependencies
 
-FAISS for vector search
-OpenAI for embeddings and chat
-Python-frontmatter for markdown parsing
+- FAISS for vector search
+- OpenAI for embeddings and chat
+- Python-frontmatter for markdown parsing
