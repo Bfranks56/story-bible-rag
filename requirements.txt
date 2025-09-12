@@ -1,7 +1,8 @@
-# Lighter vector database option
+# Core RAG components  
 faiss-cpu==1.7.4
-openai==1.3.7
+openai==1.51.0
 python-dotenv==1.0.0
+httpx==0.27.0
 
 # File processing
 python-frontmatter==1.0.0
