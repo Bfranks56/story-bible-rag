@@ -8,10 +8,58 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import json
 import time
+import faiss
+import numpy as np
+import pickle
 
 #load env variables
 load_dotenv()
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+
+def create_faiss_index(sections):
+    """Create FAISS index from sections with embeddings"""
+    print("Creating FAISS index...")
+
+    # Extract embeddingss and convert to numpy array
+    embeddings = []
+    metadata = []
+
+    for section in sections:
+        if 'embedding' in section:
+            embeddings.append(section['embedding'])
+            metadata.append({
+                'header': section['header'],
+                'content': section['content'],
+                'level': section['level'],
+                'file': section.get('file', 'unknown')
+            })
+
+    # convert to numpy array
+    embedding_array = np.array(embeddings, dtype=np.float32)
+
+    # create FAISS index (cosine similarity)
+    dimension = embedding_array.shape[1] 
+    index = faiss.IndexFlatIP(dimension)
+
+    # Normailze vectors for cosine similarity
+    faiss.normalize_L2(embedding_array)
+
+    # add vectors to index
+    index.add(embedding_array)
+
+    print(f"FAISS index created with {index.ntotal} vectors")
+    return index, metadata
+
+def save_index_and_metadata(index, metadata, base_path="data/"):
+    """Save FAISS index and metadata to disk"""
+    os.makedirs(base_path, exist_ok=True)
+
+    faiss.write_index(index, f"{base_path}story_bible.index")
+
+    with open(f"{base_path}metadata.pkl", 'wb') as f:
+        pickle.dump(metadata, f)
+
+    print(f"Saved index and metadata to {base_path}")
 
 def get_embeddings(text, model="text-embedding-3-small"):
     """Get embeddings for a piece of text"""
@@ -94,7 +142,7 @@ def parse_markdown_file(file_path, get_embeds=False):
             current_section["content"] += line + "\n"
 
     # Append last section if it has content
-    if current_section["content"].strip():
+    if current_section["content"].strip() and current_section["header"].strip():
         sections.append(current_section.copy())
 
     if get_embeds and sections:
@@ -141,29 +189,13 @@ def main():
     print(f"Testing embeddings with: {nerina_file}")
     
     sections = parse_markdown_file(nerina_file, get_embeds=True)
-    
     print(f"Processed {len(sections)} sections")
-    for i, section in enumerate(sections[:3]):  # Show first 3
-        has_embedding = 'embedding' in section
-        embedding_dim = len(section['embedding']) if has_embedding else 0
-        print(f"  {i+1}. {section['header']}: {embedding_dim} dimensions")
-    
-    # Save to JSON for inspection
-    output_data = []
-    for section in sections:
-        output_data.append({
-            'header': section['header'],
-            'content': section['content'][:100] + "...",  # First 100 chars
-            'level': section['level'],
-            'file': section.get('file', nerina_file),
-            'has_embedding': 'embedding' in section,
-            'embedding_size': len(section['embedding']) if 'embedding' in section else 0
-        })
-    
-    with open('data/test_embeddings.json', 'w') as f:
-        json.dump(output_data, f, indent=2)
-    
-    print("Results saved to data/test_embeddings.json")
+
+    # Create and save FAISS index
+    index, metadata = create_faiss_index(sections)
+    save_index_and_metadata(index, metadata)
+
+    print("FAISS index created and saved successfully!")
 
 if __name__ == "__main__":
     main()
