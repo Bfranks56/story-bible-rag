@@ -8,6 +8,7 @@ from openai import OpenAI
 import faiss
 import pickle
 import numpy as np
+from web_search import search_web
 
 load_dotenv()
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
@@ -48,41 +49,71 @@ def search_story_bible(query, k=3):
 
     return results
 
-def build_context_prompt(question, search_results):
-    """Build a prompt with relevant context"""
-    context_sections = []
+def should_search_web(query):
+    """Determine if query would benefit from web search"""
+    web_triggers = [
+        " vs ", " versus ", " compared to ", 
+        "gundam", "wing zero", "evangelion", "anime", "mech",
+        "research", "inspiration", "examples"
+    ]
 
+    query_lower = query.lower()
+    return any(trigger in query_lower for trigger in web_triggers)
+
+def build_context_prompt(question, search_results, web_results=None):
+    """Build a prompt with relevant context from both story bible and web"""
+    
+    # Story bible context
+    context_sections = []
     for result in search_results:
         if result['header'].strip():
-            section = f"Section: {result['header']}\n{result['content']}\n"
+            section = f"[STORY BIBLE | {result['header']}]\n{result['content']}\n"
             context_sections.append(section)
 
-    context = "\n---\n".join(context_sections)
+    story_context = "\n---\n".join(context_sections)
+    
+    # Web search context (if available)
+    web_context = ""
+    if web_results:
+        web_sections = []
+        for result in web_results:
+            section = f"[WEB | {result['title']}]\n{result['snippet']}\n"
+            web_sections.append(section)
+        web_context = "\n---\n".join(web_sections)
 
-    prompt = f"""Based on the following sections from a story bible, please answer the user's question.
+    # Build the prompt
+    prompt_parts = []
+    
+    if story_context:
+        prompt_parts.append(f"STORY BIBLE CONTEXT:\n{story_context}")
+    
+    if web_context:
+        prompt_parts.append(f"EXTERNAL CONTEXT:\n{web_context}")
+    
+    prompt_parts.append(f"USER QUESTION: {question}")
+    prompt_parts.append("Please provide a helpful answer with source citations like [STORY BIBLE | section] or [WEB | title].")
 
-CONTEXT FROM STORY BIBLE:
-{context}
-
-USER QUESTION: {question}
-
-Please provide a helpful answer based on the provided context. If the context doesn't contain enough information to fully answer the question, say so and provide what information is available."""
-
-    return prompt
+    return "\n\n".join(prompt_parts)
 
 def chat_with_bible(question):
-    """Chat about story bible content using RAG"""
+    """Enhanced chat with story bible + web search"""
     print(f"Question: {question}")
     print("Searching for relevant content...")
     
     # Search for relevant sections
     search_results = search_story_bible(question, k=3)
     
-    if not search_results:
-        return "I couldn't find relevant information in the story bible for that question."
+    # Check if we should also search the web
+    web_results = None
+    if should_search_web(question):
+        print("Also searching web for external context...")
+        web_results = search_web(question, max_results=3)
+    
+    if not search_results and not web_results:
+        return "I couldn't find relevant information for that question."
     
     # Build prompt with context
-    prompt = build_context_prompt(question, search_results)
+    prompt = build_context_prompt(question, search_results, web_results)
     
     print("Generating response...")
     
