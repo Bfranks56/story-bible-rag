@@ -1,6 +1,6 @@
-# Black Horizon Story Bible RAG System
+# Black Horizon AI Story Collaborator
 
-A Retrieval-Augmented Generation (RAG) system for preserving story bible content and enabling consistent creative collaboration on the Black Horizon / Paint It Black series. Built to solve ChatGPT's context loss problem in long creative conversations while maintaining canon fidelity.
+An intelligent story development assistant that combines Retrieval-Augmented Generation (RAG) with web research to support creative collaboration on the Black Horizon / Paint It Black series. Evolved from a simple RAG system into a full AI collaborator that maintains canon fidelity while providing research-augmented creative support.
 
 ## Problem Solved
 Traditional chat models lose context in extended story development sessions, leading to:
@@ -8,18 +8,20 @@ Traditional chat models lose context in extended story development sessions, lea
 - Personality layer overwrites
 - Context window overflow  
 - Canon contradictions and lore inconsistencies
+- Inability to research genre conventions and inspirations
 
-This RAG system provides persistent, searchable memory of version-locked story bible content (v1.10 [LOCKED]) while enabling creative brainstorming grounded in established canon.
+This AI collaborator provides persistent, searchable memory of version-locked story bible content (v1.10 [LOCKED]) while intelligently augmenting responses with relevant external research when needed.
 
-## Current Status - FULLY FUNCTIONAL RAG PIPELINE ✅
+## Current Status - AI STORY COLLABORATOR ✅
 
-✅ **Complete end-to-end RAG system working**
+✅ **Hybrid search system**: Story bible RAG + intelligent web research
+✅ **Context-aware routing**: Automatically detects when queries need external research  
+✅ **Multi-source responses**: Combines internal canon with genre research seamlessly
+✅ **Source attribution**: Clear citations `[STORY BIBLE | section]` vs `[WEB | title]`
 ✅ **File ingestion**: 151 sections parsed from 10 story bible files  
 ✅ **Vector embeddings**: FAISS database with OpenAI text-embedding-3-small
-✅ **Semantic search**: Retrieves relevant context with similarity scoring
-✅ **Interactive chat**: Questions answered using retrieved story bible content
+✅ **Interactive collaboration**: Research-augmented story development assistant
 ✅ **Content organization**: Characters (65 sections), world (65 sections), story (21 sections)
-✅ **Environment configuration**: OpenAI API integration functional
 
 ## Architecture
 
@@ -28,8 +30,9 @@ This RAG system provides persistent, searchable memory of version-locked story b
 ```text
 src/
 ├── ingest.py      - ✅ Parses markdown files, creates embeddings, builds FAISS index
+├── chat.py        - ✅ AI collaborator: hybrid search + context + intelligent responses
+├── web_search.py  - ✅ DuckDuckGo integration for external research
 ├── search.py      - 🔄 Standalone search interface (template)  
-├── chat.py        - ✅ Full RAG pipeline: search + context + AI response
 └── __init__.py    
 bible_content/     - ✅ Version-locked story bible files (characters/, world/, story/)
 data/              - ✅ FAISS vector database (story_bible.index, metadata.pkl)
@@ -37,17 +40,21 @@ data/              - ✅ FAISS vector database (story_bible.index, metadata.pkl)
 
 **Technical Stack:**
 
+- **Hybrid Search**: Story bible RAG + web research via DuckDuckGo
+- **Intelligent Routing**: Context-aware query classification
 - **Vector Search**: FAISS with cosine similarity
 - **Embeddings**: OpenAI text-embedding-3-small  
-- **Chat**: OpenAI GPT-3.5-turbo with context injection
+- **AI Collaboration**: OpenAI GPT-3.5-turbo with enhanced context injection
+- **Source Attribution**: Multi-source citation system
 - **Parsing**: Header-based chunking of markdown files
-- **Metadata**: File source, section headers, similarity scores
 
 ## Dependencies
 
-- FAISS for vector search
-- OpenAI for embeddings and chat
-- Python-frontmatter for markdown parsing
+- **Core AI**: OpenAI API for embeddings and chat completion
+- **Vector Search**: FAISS for semantic similarity search
+- **Web Research**: DuckDuckGo Search (`ddgs`) for external context
+- **File Processing**: python-frontmatter for markdown parsing
+- **Environment**: python-dotenv for configuration management
 
 ## Installation & Usage
 
@@ -76,36 +83,50 @@ cp .env.example .env
 # 1. Ingest story bible files (creates vector database)
 python src/ingest.py
 
-# 2. Interactive chat with story bible
+# 2. Interactive AI story collaboration
 python src/chat.py
 ```
 
-**Sample Queries:**
+**Enhanced Query Examples:**
+
+**Story Bible Queries:**
 
 - "How does Tomas corrode Nerina's empathy?" → retrieves Phantom Drag/static corrosion mechanics
 - "What is Fred's mask motif origin?" → cites Fred bible + Flashback bible anchor points  
 - "Describe Nerina's pilot style" → pulls character bible combat sections
+
+**Research-Augmented Queries:**
+
+- "Wing Zero vs Nerina's pilot system" → combines story bible + Gundam Wing research
+- "Evangelion compared to Black Horizon themes" → story context + external anime analysis
+- "Mech anime inspiration for Choir refactor" → internal lore + genre conventions
 
 ## Future Enhancements
 
 🔄 **Canon-Guarded Personality Layer**
 
 - Friendly, collaborative voice with hip-hop/Star Wars energy
-- [file | section] citation system for all responses
-- Clear marking of CANON vs [SUGGESTION] content
+- Enhanced citation system: `[STORY BIBLE | section]` and `[WEB | source]`
+- Clear marking of CANON vs [SUGGESTION] vs [RESEARCH] content
+
+🔄 **Advanced Research Integration**  
+
+- Smarter query classification for hybrid search
+- Genre-specific research triggers (mech anime, sci-fi tropes)
+- Cross-reference validation between internal canon and external sources
 
 🔄 **Content Update Workflow**  
 
-- Propose → Review → Approve → Re-ingest cycle
+- Research-informed content proposals
+- Propose → Review → Approve → Re-ingest cycle with external validation
 - Version management (v1.10 → v1.10.1 patches)
-- Canon guardrails: refuse to improvise when context missing
 
-🔄 **Enhanced Interaction**
+🔄 **Enhanced Collaboration Interface**
 
-- Multi-turn conversation memory
-- Expanded search with multiple retrieval strategies
-- Streamlit web interface for easier collaboration
+- Multi-turn conversation memory with research context
+- Streamlit web interface for easier creative sessions
+- Export research summaries and canon updates
 
 ---
 
-*This system solves a real creative workflow problem: maintaining story consistency across long development sessions while enabling creative exploration grounded in established canon.*
+*This system evolved from a simple RAG into a full AI story collaborator that solves real creative workflow problems: maintaining story consistency while providing intelligent research support for genre-aware creative development.*
