@@ -14,27 +14,17 @@ This AI collaborator provides persistent, searchable memory of version-locked st
 
 ## Current Status - AI STORY COLLABORATOR
 
-**Hybrid search system**: Story bible RAG + intelligent web research
-
-**Context-aware routing**: Automatically detects when queries need external research  
-
-**Multi-source responses**: Combines internal canon with genre research seamlessly
-
-**Source attribution**: Clear citations `[STORY BIBLE | section]` vs `[WEB | title]`
-
-**Content generation**: AI can create new story bible sections and save drafts
-
-**Intelligent content detection**: Automatically recognizes expansion/suggestion requests
-
-**Draft management**: Auto-saves generated content to `bible_content/drafts/`
-
-**File ingestion**: 151 sections parsed from 10 story bible files  
-
-**Vector embeddings**: FAISS database with OpenAI text-embedding-3-small
-
-**Interactive collaboration**: Research-augmented story development assistant
-
-**Content organization**: Characters (65 sections), world (65 sections), story (21 sections)
+- **Hybrid search system**: Story bible RAG + intelligent web research
+- **Context-aware routing**: Automatically detects when queries need external research  
+- **Multi-source responses**: Combines internal canon with genre research seamlessly
+- **Source attribution**: Clear citations `[STORY BIBLE | section]` vs `[WEB | title]`
+- **Content generation**: AI can create new story bible sections and save drafts
+- **Intelligent content detection**: Automatically recognizes expansion/suggestion requests
+- **Draft management**: Auto-saves generated content to `bible_content/drafts/`
+- **File ingestion**: 151 sections parsed from 10 story bible files  
+- **Vector embeddings**: FAISS database with OpenAI text-embedding-3-small
+- **Interactive collaboration**: Research-augmented story development assistant
+- **Content organization**: Characters (65 sections), world (65 sections), story (21 sections)
 
 ## Architecture
 
