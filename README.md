@@ -43,6 +43,8 @@ bible_content/     - Version-locked story bible files (characters/, world/, stor
 data/              - FAISS vector database (story_bible.index, metadata.pkl)
 ```
 
+**Note**: The `bible_content/` directory contains proprietary story bible files for the Black Horizon series and is not included in this repository to protect intellectual property. Users should populate this directory with their own markdown files for the system to ingest and process.
+
 **Technical Stack:**
 
 - **Hybrid Search**: Story bible RAG + web research via DuckDuckGo
