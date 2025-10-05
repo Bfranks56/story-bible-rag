@@ -12,16 +12,19 @@ Traditional chat models lose context in extended story development sessions, lea
 
 This AI collaborator provides persistent, searchable memory of version-locked story bible content (v1.10 [LOCKED]) while intelligently augmenting responses with relevant external research when needed.
 
-## Current Status - AI STORY COLLABORATOR ✅
+## Current Status - AI STORY COLLABORATOR
 
-✅ **Hybrid search system**: Story bible RAG + intelligent web research
-✅ **Context-aware routing**: Automatically detects when queries need external research  
-✅ **Multi-source responses**: Combines internal canon with genre research seamlessly
-✅ **Source attribution**: Clear citations `[STORY BIBLE | section]` vs `[WEB | title]`
-✅ **File ingestion**: 151 sections parsed from 10 story bible files  
-✅ **Vector embeddings**: FAISS database with OpenAI text-embedding-3-small
-✅ **Interactive collaboration**: Research-augmented story development assistant
-✅ **Content organization**: Characters (65 sections), world (65 sections), story (21 sections)
+**Hybrid search system**: Story bible RAG + intelligent web research
+**Context-aware routing**: Automatically detects when queries need external research  
+**Multi-source responses**: Combines internal canon with genre research seamlessly
+**Source attribution**: Clear citations `[STORY BIBLE | section]` vs `[WEB | title]`
+**Content generation**: AI can create new story bible sections and save drafts
+**Intelligent content detection**: Automatically recognizes expansion/suggestion requests
+**Draft management**: Auto-saves generated content to `bible_content/drafts/`
+**File ingestion**: 151 sections parsed from 10 story bible files  
+**Vector embeddings**: FAISS database with OpenAI text-embedding-3-small
+**Interactive collaboration**: Research-augmented story development assistant
+**Content organization**: Characters (65 sections), world (65 sections), story (21 sections)
 
 ## Architecture
 
@@ -29,24 +32,28 @@ This AI collaborator provides persistent, searchable memory of version-locked st
 
 ```text
 src/
-├── ingest.py      - ✅ Parses markdown files, creates embeddings, builds FAISS index
-├── chat.py        - ✅ AI collaborator: hybrid search + context + intelligent responses
-├── web_search.py  - ✅ DuckDuckGo integration for external research
-├── search.py      - 🔄 Standalone search interface (template)  
+├── ingest.py      - Parses markdown files, creates embeddings, builds FAISS index
+├── chat.py        - AI collaborator: hybrid search + content generation + draft saving
+├── web_search.py  - DuckDuckGo integration for external research
+├── search.py      - Standalone search interface (template)  
+├── test_search.py - Search functionality testing utilities
 └── __init__.py    
-bible_content/     - ✅ Version-locked story bible files (characters/, world/, story/)
-data/              - ✅ FAISS vector database (story_bible.index, metadata.pkl)
+bible_content/     - Version-locked story bible files (characters/, world/, story/)
+├── drafts/        - AI-generated content drafts with timestamps
+data/              - FAISS vector database (story_bible.index, metadata.pkl)
 ```
 
 **Technical Stack:**
 
 - **Hybrid Search**: Story bible RAG + web research via DuckDuckGo
-- **Intelligent Routing**: Context-aware query classification
+- **Intelligent Routing**: Context-aware query classification and content generation detection
+- **Content Generation**: AI-powered story bible expansion with draft management
 - **Vector Search**: FAISS with cosine similarity
 - **Embeddings**: OpenAI text-embedding-3-small  
 - **AI Collaboration**: OpenAI GPT-3.5-turbo with enhanced context injection
 - **Source Attribution**: Multi-source citation system
 - **Parsing**: Header-based chunking of markdown files
+- **Draft System**: Timestamped auto-saving of generated content
 
 ## Dependencies
 
@@ -101,31 +108,47 @@ python src/chat.py
 - "Evangelion compared to Black Horizon themes" → story context + external anime analysis
 - "Mech anime inspiration for Choir refactor" → internal lore + genre conventions
 
+**Content Generation Queries:**
+
+- "Expand Tomas's childhood trauma" → creates new story bible section and saves draft
+- "Add details to Nerina's combat techniques" → generates content based on existing canon
+- "Suggest missing elements in Fred's arc" → AI creates new story bible entries
+- "Develop the static corrosion mechanics" → expands technical worldbuilding content
+
+## Recent Enhancements
+
+**AI Content Generation**
+- Automatic detection of expansion/suggestion requests  
+- Smart content generation with canon consistency
+- Draft file management with timestamps (`GENERAL_DRAFT_YYYYMMDD_HHMMSS.md`)
+- Ready-to-review markdown format output
+
+**Enhanced Query Intelligence**
+- Content generation triggers: "expand", "add", "develop", "create", "suggest"
+- Web search triggers: "vs", "compared to", anime/mech references
+- Context-aware response routing for optimal information delivery
+
 ## Future Enhancements
 
-🔄 **Canon-Guarded Personality Layer**
+**Canon-Guarded Personality Layer**
 
 - Friendly, collaborative voice with hip-hop/Star Wars energy
 - Enhanced citation system: `[STORY BIBLE | section]` and `[WEB | source]`
 - Clear marking of CANON vs [SUGGESTION] vs [RESEARCH] content
 
-🔄 **Advanced Research Integration**  
+**Advanced Content Workflow**  
 
-- Smarter query classification for hybrid search
-- Genre-specific research triggers (mech anime, sci-fi tropes)
-- Cross-reference validation between internal canon and external sources
-
-🔄 **Content Update Workflow**  
-
-- Research-informed content proposals
-- Propose → Review → Approve → Re-ingest cycle with external validation
+- Draft review and approval system
+- Auto-reingestion of approved drafts
 - Version management (v1.10 → v1.10.1 patches)
+- Integration testing for new content consistency
 
-🔄 **Enhanced Collaboration Interface**
+**Enhanced Collaboration Interface**
 
 - Multi-turn conversation memory with research context
 - Streamlit web interface for easier creative sessions
 - Export research summaries and canon updates
+- Batch content generation and organization tools
 
 ---
 
