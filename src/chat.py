@@ -95,6 +95,65 @@ def build_context_prompt(question, search_results, web_results=None):
 
     return "\n\n".join(prompt_parts)
 
+
+def should_generate_content(query):
+    """Detect if user wants AI to generate new story bible content"""
+    expansion_triggers = [
+        "expand", "add", "develop", "create", "suggest", 
+        "what's missing", "fill in", "elaborate"
+    ]
+    
+    query_lower = query.lower()
+    return any(trigger in query_lower for trigger in expansion_triggers)
+
+def build_expansion_prompt(question, search_results):
+     """Build prompt for generating new story bible content"""
+
+     context_sections = []
+     for result in search_results:
+         if result['header'].strip():
+            section = f"[EXISTING | {result['header']}]\n{result['content']}\n"
+            context_sections.append(section)
+            
+     existing_context = "\n---\n".join(context_sections)
+
+     prompt = f"""You are helping expand a story bible for the Black Horizon series.
+
+     EXISTING STORY BIBLE CONTENT:
+     {existing_context}
+
+     USER REQUEST: {question}
+
+     Generate a new story bible section in proper markdown format:
+        - Use ## for section headers
+        - Keep the tone consistent with existing content
+        - Add specific, concrete details
+        - Stay true to established canon
+
+     Format your response as a ready-to-save markdown section."""
+
+     return prompt
+
+
+def save_draft_content(content, character_name="GENERAL"):
+    """Save AI-generated content to a DRAFT file"""
+    import datetime
+
+    #create timestamp for unique filename
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    #create filename
+    filename = f"bible_content/drafts/{character_name}_DRAFT_{timestamp}.md"
+
+    # Create drafts directory if it doesn't exist
+    os.makedirs("bible_content/drafts", exist_ok=True)
+
+    #save content
+    with open(filename, 'w') as f:
+        f.write(content)
+
+    return filename
+
 def chat_with_bible(question):
     """Enhanced chat with story bible + web search"""
     print(f"Question: {question}")
@@ -102,6 +161,26 @@ def chat_with_bible(question):
     
     # Search for relevant sections
     search_results = search_story_bible(question, k=3)
+    
+    # Check if user wants to generate new content (MOVE THIS UP)
+    if should_generate_content(question):
+        print("Generating new story bible content...")
+        expansion_prompt = build_expansion_prompt(question, search_results)
+
+        # Generate content
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user","content": expansion_prompt}],
+            temperature=0.7,
+            max_tokens=800
+        )
+
+        generated_content = response.choices[0].message.content
+
+        # Save to draft file
+        draft_file = save_draft_content(generated_content)
+
+        return f"Generated new content and saved to: {draft_file}\n\nPREVIEW:\n{generated_content}"
     
     # Check if we should also search the web
     web_results = None

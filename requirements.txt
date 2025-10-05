@@ -1,6 +1,6 @@
 # Core RAG components  
-faiss-cpu==1.7.4
-openai==1.108.0
+faiss-cpu==1.12.0
+openai==1.51.0
 python-dotenv==1.0.0
 httpx==0.27.0
 
@@ -8,9 +8,9 @@ httpx==0.27.0
 python-frontmatter==1.0.0
 
 # Data handling
-numpy==1.24.3
-pandas==2.0.3
+numpy>=1.26.0
+pandas>=2.1.0
 
 # Optional: for future web interface
-streamlit==1.28.1
-ddgs==3.9.6
+streamlit>=1.28.0
+duckduckgo-search>=3.9.6

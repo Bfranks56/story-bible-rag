@@ -1,4 +1,4 @@
-from ddgs import DDGS
+from duckduckgo_search import DDGS
 
 def search_web(query, max_results=3):
     """Simple web search function"""
