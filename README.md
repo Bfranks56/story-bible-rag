@@ -17,10 +17,15 @@ This AI collaborator provides persistent, searchable memory of version-locked st
 - **Hybrid search system**: Story bible RAG + intelligent web research
 - **Context-aware routing**: Automatically detects when queries need external research  
 - **Multi-source responses**: Combines internal canon with genre research seamlessly
-- **Source attribution**: Clear citations `[STORY BIBLE | section]` vs `[WEB | title]`
+- **Professional voice**: Conversational, knowledgeable creative partner with natural language
+- **Source attribution**: Bold citations with clear formatting `**[filename | section]:**` 
 - **Content generation**: AI can create new story bible sections and save drafts
+- **Character-aware drafts**: Auto-detects character focus and names draft files accordingly
 - **Intelligent content detection**: Automatically recognizes expansion/suggestion requests
+- **Relevance filtering**: Keeps conversations focused on Black Horizon story bible content
+- **Meta-conversation support**: Handles thematic discussions and external comparisons
 - **Draft management**: Auto-saves generated content to `bible_content/drafts/`
+- **Code optimization**: DRY principles applied with helper functions and constants
 - **File ingestion**: 151 sections parsed from 10 story bible files  
 - **Vector embeddings**: FAISS database with OpenAI text-embedding-3-small
 - **Interactive collaboration**: Research-augmented story development assistant
@@ -49,13 +54,16 @@ data/              - FAISS vector database (story_bible.index, metadata.pkl)
 
 - **Hybrid Search**: Story bible RAG + web research via DuckDuckGo
 - **Intelligent Routing**: Context-aware query classification and content generation detection
-- **Content Generation**: AI-powered story bible expansion with draft management
+- **Content Generation**: AI-powered story bible expansion with character-aware draft management
+- **Relevance Filtering**: Similarity score thresholds with meta-conversation detection
+- **Voice & Style**: Refined system prompts for natural, professional collaboration
 - **Vector Search**: FAISS with cosine similarity
 - **Embeddings**: OpenAI text-embedding-3-small  
-- **AI Collaboration**: OpenAI GPT-3.5-turbo with enhanced context injection
-- **Source Attribution**: Multi-source citation system
+- **AI Model**: OpenAI GPT-4o-mini with optimized context injection
+- **Source Attribution**: Professional citation formatting with bold headers
+- **Code Architecture**: DRY principles with helper functions and constants
 - **Parsing**: Header-based chunking of markdown files
-- **Draft System**: Timestamped auto-saving of generated content
+- **Draft System**: Character-aware timestamped auto-saving of generated content
 
 ## Dependencies
 
@@ -112,22 +120,41 @@ python src/chat.py
 
 **Content Generation Queries:**
 
-- "Expand Tomas's childhood trauma" → creates new story bible section and saves draft
-- "Add details to Nerina's combat techniques" → generates content based on existing canon
-- "Suggest missing elements in Fred's arc" → AI creates new story bible entries
-- "Develop the static corrosion mechanics" → expands technical worldbuilding content
+- "Expand Tomas's childhood trauma" → creates new story bible section, saves as `TOMAS_DRAFT_YYYYMMDD_HHMMSS.md`
+- "Add details to Nerina's combat techniques" → generates content, saves as `NERINA_DRAFT_YYYYMMDD_HHMMSS.md`
+- "Suggest missing elements in Fred's arc" → AI creates new story bible entries in character-specific draft
+- "Develop the static corrosion mechanics" → expands technical worldbuilding, saves as `GENERAL_DRAFT_YYYYMMDD_HHMMSS.md`
+
+**Meta-Conversation Queries:**
+
+- "What themes does Black Horizon explore?" → thematic analysis using story bible content
+- "How is this similar to Evangelion?" → combines internal lore with external comparisons
+- "What influences can you see in the worldbuilding?" → identifies patterns and inspirations
 
 ## Recent Enhancements
 
-**AI Content Generation**
-- Automatic detection of expansion/suggestion requests  
-- Smart content generation with canon consistency
-- Draft file management with timestamps (`GENERAL_DRAFT_YYYYMMDD_HHMMSS.md`)
-- Ready-to-review markdown format output
+**Professional Voice & Style**
+- Conversational, knowledgeable creative partner tone
+- Natural language without forced slang or gimmicks
+- Professional citation formatting with bold headers
+- Canon integrity with clear source grounding
+
+**Smart Content Management**
+- Character-aware draft naming (NERINA_DRAFT, TOMAS_DRAFT, etc.)
+- Automatic character detection from queries and search results
+- Relevance filtering to keep conversations on-topic
+- Meta-conversation support for thematic discussions
+
+**Code Architecture Improvements**
+- DRY principles applied throughout codebase
+- Helper functions for common operations
+- Constants for trigger lists and system prompts
+- Centralized OpenAI API call handling
 
 **Enhanced Query Intelligence**
 - Content generation triggers: "expand", "add", "develop", "create", "suggest"
-- Web search triggers: "vs", "compared to", anime/mech references
+- Web search triggers: "vs", "compared to", anime/mech references, "similar to"
+- Meta-conversation triggers: "like", "theme", "influenced by", "reminds"
 - Context-aware response routing for optimal information delivery
 
 ## Future Enhancements
