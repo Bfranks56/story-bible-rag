@@ -185,14 +185,26 @@ def main():
     print("Environment Loaded")
     
     # Test with just Nerina file first
-    nerina_file = "bible_content/characters/Character_Bible_NERINA_v1.10.1_LOCKED.md"
-    print(f"Testing embeddings with: {nerina_file}")
+    # nerina_file = "bible_content/characters/Character_Bible_NERINA_v1.10.1_LOCKED.md"
+    all_files = glob.glob("bible_content/**/*.md", recursive=True)
+
+    story_files = [f for f in all_files if "/drafts/" not in f]
+
+    print(f"Found {len(story_files)} story bible files")
     
-    sections = parse_markdown_file(nerina_file, get_embeds=True)
-    print(f"Processed {len(sections)} sections")
+    all_sections = []
+    for filepath in story_files:
+        print(f"Processing: {filepath}")
+        sections = parse_markdown_file(filepath, get_embeds=True)
+        all_sections.extend(sections)
+        print(f" -> {len(sections)} sections")
+
+    print(f"\nTotal: {len(all_sections)} sections processed")
+    # sections = parse_markdown_file(nerina_file, get_embeds=True)
+    # print(f"Processed {len(sections)} sections")
 
     # Create and save FAISS index
-    index, metadata = create_faiss_index(sections)
+    index, metadata = create_faiss_index(all_sections)
     save_index_and_metadata(index, metadata)
 
     print("FAISS index created and saved successfully!")

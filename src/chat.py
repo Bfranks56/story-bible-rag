@@ -24,9 +24,12 @@ VOICE & STYLE:
 - Enthusiastic about the story without being gimmicky
 
 SOURCE CITATION:
-- Always cite sources at the start: [filename | section]
-- Example: [Character_Bible_NERINA | Pilot Style]: Nerina's empathic grace...
-- Make citations feel integrated, not jarring
+- Always cite sources in bold with newline separation
+- Format: **[filename | section]:**
+- Then start content on next line
+- Example:
+  **[Character_Bible_NERINA | Pilot Style]:**
+  Nerina's empathic grace guides her movements...
 
 CANON INTEGRITY:
 - Ground everything in retrieved story bible content
@@ -180,6 +183,23 @@ def _call_openai_chat(prompt, system_prompt=SYSTEM_PROMPT, max_tokens=500, tempe
     )
     return response.choices[0].message.content
 
+def detect_character_name(query, search_results):
+    """Detect which character is being discussed"""
+    characters = ["NERINA", "TOMAS", "FRED", "DASHIEL"]
+
+    query_upper = query.upper()
+    for char in characters:
+        if char in query_upper:
+            return char
+        
+    for result in search_results:
+        filename = result.get('file', '').upper()
+        for char in characters:
+            if char in filename:
+                return char
+            
+    return "GENERAL"
+
 def save_draft_content(content, character_name="GENERAL"):
     """Save AI-generated content to a DRAFT file"""
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -222,8 +242,10 @@ def chat_with_bible(question):
         # Generate content with higher token limit for expansion
         generated_content = _call_openai_chat(expansion_prompt, max_tokens=800)
 
-        # Save to draft file
-        draft_file = save_draft_content(generated_content)
+        # Detect character and save to draft file
+        character_name = detect_character_name(question, search_results)
+        draft_file = save_draft_content(generated_content, character_name)
+        # draft_file = save_draft_content(generated_content)
 
         return f"Generated new content and saved to: {draft_file}\n\nPREVIEW:\n{generated_content}"
     
