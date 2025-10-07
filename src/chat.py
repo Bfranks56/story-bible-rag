@@ -143,6 +143,15 @@ def build_context_prompt(question, search_results, web_results=None):
 
 def should_generate_content(query):
     """Detect if user wants AI to generate new story bible content"""
+    query_lower = query.lower()
+    
+    # Exclude informational queries (asking about existing content)
+    info_words = ["who", "what", "when", "where", "why", "how", "tell me", "describe"]
+    if any(word in query_lower for word in info_words):
+        # Only generate if explicitly requested
+        return any(word in query_lower for word in ["expand", "elaborate", "develop", "add to"])
+    
+    # Otherwise check standard triggers
     return _has_triggers(query, CONTENT_GENERATION_TRIGGERS)
 
 def build_expansion_prompt(question, search_results):
@@ -221,6 +230,22 @@ def chat_with_bible(question):
     
     # Search for relevant sections
     search_results = search_story_bible(question, k=3)
+
+    # Expand query with synonyms for better coverage
+    # TODO: Replace with proper query refinement system (Tier 2)
+    # Current approach is brittle - only handles create/design synonyms
+    query_lower = question.lower()
+    if any(word in query_lower for word in ["created", "creator", "made", "built"]):
+    # Also search with design-related terms
+        expanded_query = question.replace("created", "designed").replace("creator", "designer").replace("made", "developed").replace("built", "developed")
+        expanded_results = search_story_bible(expanded_query, k=3)
+    # Combine results, avoiding duplicates
+        seen_ids = {r['file'] + r['header'] for r in search_results}
+        for result in expanded_results:
+            result_id = result['file'] + result['header']
+            if result_id not in seen_ids:
+                search_results.append(result)
+                seen_ids.add(result_id)
 
     # Define meta-conversation triggers (questions ABOUT the story/themes)
     meta_triggers = ["like", "similar", "compared", "influence", "inspired by", 
