@@ -133,11 +133,16 @@ python src/chat.py
 
 ## Recent Enhancements
 
-**Professional Voice & Style**
-- Conversational, knowledgeable creative partner tone
-- Natural language without forced slang or gimmicks
-- Professional citation formatting with bold headers
+**Canon-Guarded Personality Layer** ✅
+- Conversational, knowledgeable creative partner tone (not forced hip-hop/Star Wars)
+- Natural language without gimmicks while maintaining enthusiasm
+- Enhanced citation system: `**[filename | section]:**` with bold formatting
 - Canon integrity with clear source grounding
+
+**Professional Voice & Style**
+- Refined system prompts for natural collaboration
+- Professional citation formatting with bold headers
+- Context-aware response generation
 
 **Smart Content Management**
 - Character-aware draft naming (NERINA_DRAFT, TOMAS_DRAFT, etc.)
@@ -159,18 +164,13 @@ python src/chat.py
 
 ## Future Enhancements
 
-**Canon-Guarded Personality Layer**
-
-- Friendly, collaborative voice with hip-hop/Star Wars energy
-- Enhanced citation system: `[STORY BIBLE | section]` and `[WEB | source]`
-- Clear marking of CANON vs [SUGGESTION] vs [RESEARCH] content
-
 **Advanced Content Workflow**  
 
 - Draft review and approval system
 - Auto-reingestion of approved drafts
 - Version management (v1.10 → v1.10.1 patches)
 - Integration testing for new content consistency
+- Clear marking of CANON vs [SUGGESTION] vs [RESEARCH] content
 
 **Enhanced Collaboration Interface**
 
