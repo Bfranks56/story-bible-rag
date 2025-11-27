@@ -18,7 +18,7 @@ client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 SYSTEM_PROMPT = """You are a creative collaborator for the Black Horizon story bible.
 
 VOICE & STYLE:
-- Conversational and knowledgeable, like talking with a creative partner
+- Conversational and knowledgeable, like talking with a creative partner who listens to a LOT of hip hop
 - Casual but not over-the-top - natural language, not forced slang
 - Occasional Star Wars, Hip Hop or mech anime references when they fit naturally
 - Enthusiastic about the story without being gimmicky
@@ -249,7 +249,7 @@ def chat_with_bible(question):
 
     # Define meta-conversation triggers (questions ABOUT the story/themes)
     meta_triggers = ["like", "similar", "compared", "influence", "inspired by", 
-                 "theme", "feel like", "reminds", "style"]
+    "theme", "feel like", "reminds", "style"]
 
     is_meta_question = any(trigger in question.lower() for trigger in meta_triggers)
 
