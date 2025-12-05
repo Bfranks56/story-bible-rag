@@ -42,8 +42,6 @@ This AI collaborator provides persistent, searchable memory of version-locked st
 
 ## Development Roadmap
 
-### Required Next Features (Non-Negotiable)
-
 **Thread Persistence - Priority 1**
 - Save conversations to JSON files in `data/threads/` directory
 - Enable loading previous threads by timestamp/preview
