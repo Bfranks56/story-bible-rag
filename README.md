@@ -12,7 +12,7 @@ Traditional chat models lose context in extended story development sessions, lea
 
 This AI collaborator provides persistent, searchable memory of version-locked story bible content (v1.10.1 [LOCKED]) while intelligently augmenting responses with relevant external research when needed.
 
-## Current Status - AI STORY COLLABORATOR (60% Complete)
+## Current Status - AI STORY COLLABORATOR (65% Complete)
 
 **Core Functionality**
 - **Hybrid search system**: Story bible RAG + intelligent web research
@@ -26,6 +26,7 @@ This AI collaborator provides persistent, searchable memory of version-locked st
 - **Relevance filtering**: Keeps conversations focused on Black Horizon story bible content
 - **Meta-conversation support**: Handles thematic discussions and external comparisons
 - **Draft management**: Auto-saves generated content to `bible_content/drafts/`
+- **Thread persistence**: Conversations saved to `data/threads/` as JSON; each session prints a thread ID for resuming later
 
 **Technical Implementation**
 - **File ingestion**: 313 story bible sections indexed in FAISS vector database
@@ -33,8 +34,7 @@ This AI collaborator provides persistent, searchable memory of version-locked st
 - **Interactive collaboration**: Research-augmented story development assistant
 - **Query cost**: ~$0.0012 per query with current single-stage retrieval
 
-**Critical Limitations**
-- **No cross-session memory**: Conversations reset when program closes
+**Current Limitations**
 - **Limited retrieval**: Only top 3 chunks (k=3) with 0.3 similarity threshold  
 - **Single-stage search**: Pure vector similarity without intelligent ranking
 - **Synonym problems**: "created" vs "designed" don't match well
@@ -42,14 +42,22 @@ This AI collaborator provides persistent, searchable memory of version-locked st
 
 ## Development Roadmap
 
-**Thread Persistence - Priority 1**
-- Save conversations to JSON files in `data/threads/` directory
-- Enable loading previous threads by timestamp/preview
-- Build conversation history into context for each query
-- Allows resuming story development across days/weeks
-- Multiple ongoing threads: "Nerina arc", "Season 1 plotting", "Mech designs"
+**Thread Persistence** ✅ Complete
+- Conversations saved to `data/threads/<id>.json`
+- Thread ID printed at session start for resuming later
+- Full turn history with role, type, characters, and timestamp
 
-**Two-Stage Retrieval - Priority 2**  
+**Intent Classification - Priority 1**
+- Replace keyword-based routing with a single LLM classifier call
+- Four intents: `story_query`, `web_research`, `expansion_request`, `off_topic`
+- Adds retrieval logging with similarity scores
+
+**Bible Update Automation - Priority 2**
+- Semantic matching of drafts to target bible sections
+- Code-review style diff preview before any file write
+- Version bumping, archive, and re-ingest on approval
+
+**Two-Stage Retrieval - Priority 3**  
 - **Stage 1**: FAISS search for top 15 candidates (cast wide net)
 - **Stage 2**: GPT-4o-mini ranks candidates and selects top 5-7 most relevant
 - Solves synonym matching, improves thematic understanding, filters noise
@@ -89,25 +97,26 @@ src/
 ├── search.py      - Standalone search interface (template)  
 ├── test_search.py - Search functionality testing utilities
 └── __init__.py    
+tests/
+├── test_thread.py     - Thread persistence unit tests
+├── test_chat_logic.py - Pure logic helper unit tests
+└── test_io.py         - File I/O and web search unit tests
 bible_content/
 ├── characters/    - Character bible files (v1.10.1 LOCKED)
 ├── world/         - World-building files (v1.10.1 LOCKED)  
 ├── story/         - Story/plot files (v1.10.1 LOCKED)
 ├── drafts/        - AI-generated content drafts with timestamps
 └── archive/       - Previous versions and archived content
-data/              - FAISS vector database (story_bible.index, test_embeddings.json)
+data/
+├── story_bible.index  - FAISS vector database
+├── metadata.pkl       - Section metadata
+├── test_embeddings.json
+└── threads/           - Persisted conversation threads (JSON, one file per session)
 ```
 
 **Note**: The `bible_content/` directory contains proprietary story bible files for the Black Horizon series and is not included in this repository to protect intellectual property. Users should populate this directory with their own markdown files for the system to ingest and process.
 
 **Version Management**: Current files are v1.10.1 LOCKED. Previous versions are archived in `bible_content/archive/` with organized subdirectories for characters, story, and world content.
-
-**Critical Limitations (Blocking 77% Completion)**
-- **No cross-session memory**: Conversations reset when program closes
-- **Limited retrieval**: Only top 3 chunks (k=3) with 0.3 similarity threshold  
-- **Single-stage search**: Pure vector similarity without intelligent ranking
-- **Synonym problems**: "created" vs "designed" don't match well
-- **Nuance issues**: Misses thematic connections between related sections
 
 - **Hybrid Search**: Story bible RAG + web research via DuckDuckGo
 - **Intelligent Routing**: Context-aware query classification and content generation detection
@@ -141,38 +150,73 @@ data/              - FAISS vector database (story_bible.index, test_embeddings.j
 
 ## Installation & Usage
 
-**Setup:**
+### Prerequisites
+- Python 3.10+
+- An OpenAI API key with access to `gpt-4o-mini` and `text-embedding-3-small`
+- No other accounts required — web search uses DuckDuckGo (no key needed)
 
+### Setup
+
+**1. Clone and navigate to the project**
 ```bash
-# Clone and navigate to project
 git clone <repository-url>
 cd story-bible-rag
-
-# Create virtual environment  
-python3 -m venv venv
-source venv/bin/activate  # On macOS/Linux
-# venv\Scripts\activate    # On Windows
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Configure OpenAI API key
-cp .env.example .env
-# Edit .env with your OPENAI_API_KEY
 ```
 
-**Usage:**
-
+**2. Create and activate a virtual environment**
 ```bash
-# 1. Populate bible_content/ directory with your markdown files
-# Structure: bible_content/{characters,world,story}/*.md
+python3 -m venv venv
+source venv/bin/activate   # macOS / Linux
+# venv\Scripts\activate    # Windows
+```
 
-# 2. Ingest story bible files (creates vector database)
+**3. Install dependencies**
+```bash
+pip install -r requirements.txt
+```
+
+**4. Create a `.env` file in the project root** *(only needed to run the agent)*
+```bash
+touch .env
+```
+Add your own OpenAI API key (never commit this file):
+```
+OPENAI_API_KEY=sk-...
+```
+You'll need an OpenAI account with access to `gpt-4o-mini` and `text-embedding-3-small`. The key is yours — this repo does not provide one.
+
+**5. Populate `bible_content/` with your markdown files**
+```
+bible_content/
+├── characters/   ← character bible .md files
+├── world/        ← worldbuilding .md files
+└── story/        ← story/plot .md files
+```
+Drafts and archive folders are managed automatically — don't add content there manually.
+
+**6. Build the FAISS index** (run from project root, not from `src/`)
+```bash
 python src/ingest.py
+```
+Parses all markdown in `bible_content/` (excluding `drafts/`), generates embeddings, and writes `data/story_bible.index` + `data/metadata.pkl`.  
+**Cost:** ~$0.01–0.02 for a full ingest at current bible size.  
+**Skip** if `data/story_bible.index` already exists and no bible content has changed.
 
-# 3. Interactive AI story collaboration
+**7. Start the chat interface**
+```bash
 python src/chat.py
 ```
+A thread ID is printed at startup. Save it to resume the same conversation in a future session. Type `quit` to exit.
+
+**8. Run the test suite**
+```bash
+python -m pytest tests/ -v
+```
+
+### Re-ingest (when to run `ingest.py` again)
+- After adding new files to `characters/`, `world/`, or `story/`
+- After promoting a draft to a versioned bible file
+- Do **not** re-ingest after adding drafts — `ingest.py` excludes `drafts/` automatically
 
 **Enhanced Query Examples (What Works Right Now):**
 

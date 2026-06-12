@@ -171,6 +171,12 @@ cython_debug/
 # Story bible content (private creative work)
 bible_content/
 
+# Project planning docs (internal)
+instructions/
+
+# Runtime conversation threads (local session data, not source code)
+data/threads/
+
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore

@@ -3,6 +3,8 @@ Chat interface - combines search results with OpenAI chat completion
 """
 
 import os
+import json
+import uuid
 import datetime
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -56,6 +58,50 @@ CONTENT_GENERATION_TRIGGERS = [
     "expand", "add", "develop", "create", "suggest", 
     "what's missing", "fill in", "elaborate"
 ]
+
+# ─── Thread Persistence ────────────────────────────────────────────────────────
+
+THREADS_DIR = "data/threads"
+
+def generate_thread_id():
+    """Generate a unique thread ID"""
+    return uuid.uuid4().hex[:12]
+
+def initialize_thread(thread_id):
+    """Create a new thread dict with empty history"""
+    return {
+        "thread_id": thread_id,
+        "created_at": datetime.datetime.now().isoformat(timespec="seconds"),
+        "turns": []
+    }
+
+def save_thread(thread):
+    """Write thread to data/threads/<thread_id>.json"""
+    os.makedirs(THREADS_DIR, exist_ok=True)
+    path = os.path.join(THREADS_DIR, f"{thread['thread_id']}.json")
+    with open(path, "w") as f:
+        json.dump(thread, f, indent=2)
+
+def load_thread(thread_id):
+    """Load thread from disk; returns None if not found"""
+    path = os.path.join(THREADS_DIR, f"{thread_id}.json")
+    if not os.path.exists(path):
+        return None
+    with open(path) as f:
+        return json.load(f)
+
+def _make_turn(role, content, turn_type="story_query", characters=None, tokens=0):
+    """Build a turn dict with the standard data contract fields"""
+    return {
+        "timestamp": datetime.datetime.now().isoformat(timespec="seconds"),
+        "role": role,
+        "content": content,
+        "type": turn_type,
+        "characters": characters or [],
+        "tokens": tokens
+    }
+
+# ───────────────────────────────────────────────────────────────────────────────
 
 def load_index_and_metadata(base_path="data/"):
     """Load FAISS index and metadata from disk"""
@@ -224,10 +270,20 @@ def save_draft_content(content, character_name="GENERAL"):
 
     return filename
 
-def chat_with_bible(question):
+def chat_with_bible(question, thread_id=None):
     """Enhanced chat with story bible + web search"""
     print(f"Question: {question}")
     print("Searching for relevant content...")
+
+    # Load or initialize thread
+    if thread_id:
+        thread = load_thread(thread_id) or initialize_thread(thread_id)
+    else:
+        thread = None
+
+    # Append user turn to history
+    if thread is not None:
+        thread["turns"].append(_make_turn("user", question))
     
     # Search for relevant sections
     search_results = search_story_bible(question, k=3)
@@ -271,9 +327,16 @@ def chat_with_bible(question):
         # Detect character and save to draft file
         character_name = detect_character_name(question, search_results)
         draft_file = save_draft_content(generated_content, character_name)
-        # draft_file = save_draft_content(generated_content)
 
-        return f"Generated new content and saved to: {draft_file}\n\nPREVIEW:\n{generated_content}"
+        response = f"Generated new content and saved to: {draft_file}\n\nPREVIEW:\n{generated_content}"
+
+        # Save expansion turn to thread
+        if thread is not None:
+            characters = [character_name] if character_name != "GENERAL" else []
+            thread["turns"].append(_make_turn("assistant", response, "expansion", characters))
+            save_thread(thread)
+
+        return response
     
     # Check if we should also search the web
     web_results = None
@@ -290,12 +353,25 @@ def chat_with_bible(question):
     print("Generating response...")
     
     # Get AI response using helper function
-    return _call_openai_chat(prompt)
+    response = _call_openai_chat(prompt)
+
+    # Append assistant turn and save thread
+    if thread is not None:
+        character_name = detect_character_name(question, search_results)
+        characters = [character_name] if character_name != "GENERAL" else []
+        turn_type = "web_research" if web_results else "story_query"
+        thread["turns"].append(_make_turn("assistant", response, turn_type, characters))
+        save_thread(thread)
+
+    return response
 
 def main():
     print("Story Bible Chat Interface")
     print("Ask questions about your story bible content!")
     print("Type 'quit' to exit\n")
+
+    thread_id = generate_thread_id()
+    print(f"Thread ID: {thread_id}  (resume with this ID next session)\n")
     
     while True:
         question = input("\nYour question: ").strip()
@@ -308,7 +384,7 @@ def main():
             continue
             
         try:
-            answer = chat_with_bible(question)
+            answer = chat_with_bible(question, thread_id=thread_id)
             print(f"\nAnswer: {answer}")
         except Exception as e:
             print(f"Error: {e}")
