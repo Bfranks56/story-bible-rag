@@ -148,11 +148,11 @@ def parse_markdown_file(file_path, get_embeds=False):
     if get_embeds and sections:
         print(f" Getting embeddings for {len(sections)} sections...")
         texts = [f"{s['header']}\n{s['content']}" for s in sections]
-        embeddings =get_embeddings_batch(texts)
+        embeddings = get_embeddings_batch(texts)
 
-    if embeddings:
-        for i, embedding in enumerate(embeddings):
-            sections[i]['embedding'] = embedding
+        if embeddings:
+            for i, embedding in enumerate(embeddings):
+                sections[i]['embedding'] = embedding
 
     time.sleep(0.5)
 
