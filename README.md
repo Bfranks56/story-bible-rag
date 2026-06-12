@@ -27,6 +27,8 @@ This AI collaborator provides persistent, searchable memory of version-locked st
 - **Meta-conversation support**: Handles thematic discussions and external comparisons
 - **Draft management**: Auto-saves generated content to `bible_content/drafts/`
 - **Thread persistence**: Conversations saved to `data/threads/` as JSON; each session prints a thread ID for resuming later
+- **Token tracking**: `usage.total_tokens` captured per turn, stored in thread history (prerequisite for Phase 4 budget monitoring)
+- **FAISS index cached in memory**: Index loaded once per process, not per query
 
 **Technical Implementation**
 - **File ingestion**: 313 story bible sections indexed in FAISS vector database
@@ -42,7 +44,15 @@ This AI collaborator provides persistent, searchable memory of version-locked st
 
 ## Development Roadmap
 
-**Thread Persistence** ✅ Complete
+**Phase 0 — Pre-Flight Fixes** ✅ Complete *(June 2026)*
+- Fixed `ingest.py` scope bug: `embeddings` was referenced outside its guard block, raising `TypeError` when the API returned `None`
+- Added `MODEL = "gpt-4o-mini"` module-level constant; `_call_openai_chat` now uses it
+- `_call_openai_chat` returns `(content, tokens)` tuple; `tokens` is wired from `response.usage.total_tokens` into every `_make_turn` call
+- `search.py` stub replaced with `NotImplementedError` pointing to `chat.py`; ready for Phase 4 migration
+- FAISS index cached at module level (`_INDEX`/`_METADATA`): one disk read per process instead of one per query
+- Removed unused `pandas` dependency from `requirements.txt`
+
+**Thread Persistence** ✅ Complete *(June 2026)*
 - Conversations saved to `data/threads/<id>.json`
 - Thread ID printed at session start for resuming later
 - Full turn history with role, type, characters, and timestamp

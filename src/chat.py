@@ -17,6 +17,8 @@ load_dotenv()
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 # Constants
+MODEL = "gpt-4o-mini"
+
 SYSTEM_PROMPT = """You are a creative collaborator for the Black Horizon story bible.
 
 VOICE & STYLE:
@@ -103,14 +105,17 @@ def _make_turn(role, content, turn_type="story_query", characters=None, tokens=0
 
 # ───────────────────────────────────────────────────────────────────────────────
 
+_INDEX = None
+_METADATA = None
+
 def load_index_and_metadata(base_path="data/"):
-    """Load FAISS index and metadata from disk"""
-    index = faiss.read_index(f"{base_path}story_bible.index")
-
-    with open(f"{base_path}metadata.pkl", 'rb') as f:
-        metadata = pickle.load(f)
-
-    return index, metadata
+    """Load FAISS index and metadata from disk, caching at module level."""
+    global _INDEX, _METADATA
+    if _INDEX is None or _METADATA is None:
+        _INDEX = faiss.read_index(f"{base_path}story_bible.index")
+        with open(f"{base_path}metadata.pkl", 'rb') as f:
+            _METADATA = pickle.load(f)
+    return _INDEX, _METADATA
 
 def search_story_bible(query, k=3):
     """Search the story bible for relevant sections"""
@@ -229,7 +234,7 @@ def build_expansion_prompt(question, search_results):
 def _call_openai_chat(prompt, system_prompt=SYSTEM_PROMPT, max_tokens=500, temperature=0.7):
     """Helper function to make OpenAI chat completion calls"""
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model=MODEL,
         messages=[
             {"role": "system", "content": system_prompt}, 
             {"role": "user", "content": prompt}
@@ -237,7 +242,9 @@ def _call_openai_chat(prompt, system_prompt=SYSTEM_PROMPT, max_tokens=500, tempe
         temperature=temperature,
         max_tokens=max_tokens
     )
-    return response.choices[0].message.content
+    content = response.choices[0].message.content
+    tokens = response.usage.total_tokens if response.usage else 0
+    return content, tokens
 
 def detect_character_name(query, search_results):
     """Detect which character is being discussed"""
@@ -322,7 +329,7 @@ def chat_with_bible(question, thread_id=None):
         expansion_prompt = build_expansion_prompt(question, search_results)
         
         # Generate content with higher token limit for expansion
-        generated_content = _call_openai_chat(expansion_prompt, max_tokens=800)
+        generated_content, expansion_tokens = _call_openai_chat(expansion_prompt, max_tokens=800)
 
         # Detect character and save to draft file
         character_name = detect_character_name(question, search_results)
@@ -333,7 +340,7 @@ def chat_with_bible(question, thread_id=None):
         # Save expansion turn to thread
         if thread is not None:
             characters = [character_name] if character_name != "GENERAL" else []
-            thread["turns"].append(_make_turn("assistant", response, "expansion", characters))
+            thread["turns"].append(_make_turn("assistant", response, "expansion", characters, expansion_tokens))
             save_thread(thread)
 
         return response
@@ -353,14 +360,14 @@ def chat_with_bible(question, thread_id=None):
     print("Generating response...")
     
     # Get AI response using helper function
-    response = _call_openai_chat(prompt)
+    response, response_tokens = _call_openai_chat(prompt)
 
     # Append assistant turn and save thread
     if thread is not None:
         character_name = detect_character_name(question, search_results)
         characters = [character_name] if character_name != "GENERAL" else []
         turn_type = "web_research" if web_results else "story_query"
-        thread["turns"].append(_make_turn("assistant", response, turn_type, characters))
+        thread["turns"].append(_make_turn("assistant", response, turn_type, characters, response_tokens))
         save_thread(thread)
 
     return response

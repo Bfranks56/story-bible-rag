@@ -9,7 +9,6 @@ python-frontmatter==1.0.0
 
 # Data handling
 numpy>=1.26.0
-pandas>=2.1.0
 
 # Optional: for future web interface
 streamlit>=1.28.0

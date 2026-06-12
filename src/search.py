@@ -8,10 +8,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def search_content(query):
-    """Search for relavant story bible content"""
-    print(f"Searching for: '{query}'")
-    #TODO: add vector serach logic
-    return []
+    """Search for relevant story bible content.
+    
+    NOTE: Real search logic lives in chat.py (search_story_bible).
+    This stub will be replaced when search_story_bible is migrated here (Phase 4).
+    """
+    raise NotImplementedError("Use search_story_bible() in chat.py")
 
 def main(): 
     print("story Bible Search System")
